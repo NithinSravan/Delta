@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css?family=Sen&display=swap');
+*{
+    font-family: 'Sen';
+    margin:0;
+    box-sizing: border-box;
+}
+body{
+    background:rgb(52, 54, 51);
+}
+header{
+    margin: 0 auto;
+    color:#fff;
+}
+header ul{
+    display: flex;
+    justify-content: flex-end;
+    padding:0;
+
+}
+header h3{
+    display: inline;
+}
+header li{
+    display: block;
+    padding: 20px;
+    margin:10px 50px;
+    text-align: center;
+    list-style: none;
+}
+main{
+    color:green;
+}
+main p{
+    display: inline-block;
+    padding: 10px 50px;
+}
+section{
+    text-align: center;
+}
+#container{
+    position: relative;
+    margin: 0 auto;
+    border: 1px solid #fff;
+    height: 300px;
+    max-width: 400px;
+    padding: 10px;
+}
+#container h1{
+    position: absolute;
+    top: 50%;
+    left:50%;
+    transform: translate(-50%,-50%);
+}
+.blocks{
+    position: relative;
+    width: 20%;
+    height: 25%;
+    float:left;
+    background: #000;
+    border-radius: 5px;
+    border: 1px solid #fff;
+}
+.numbers{
+    position: absolute;
+    top: 50%;
+    left:50%;
+    transform: translate(-50%,-50%);
+    color: #fff;
+}
+.btime{
+    display:block;
+}
+@media screen and (max-width:420px){
+    #container{
+        width: 300px;
+        height: 225px;
+    }
+    header ul{
+        flex-flow: column;
+    }
+}
