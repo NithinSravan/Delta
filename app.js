@@ -5,6 +5,7 @@ var j;
 var k = [0, 0, 0];
 var index;
 var count;
+var pos=[];
 var body;
 var myVar;
 var end = 0;
@@ -86,15 +87,15 @@ var disp = function (index)
 //used to change the color when clicked depending on the index
 var colorPicker = function (i)
 {
-	if (i >= 0 && i <= 4)
+	if (i >= 0 && i <= 5)
 	{
 		gridblock[i].style.backgroundImage = "linear-gradient(#845ec2,#d65db1,#ff6f91)";
 	}
-	else if (i >= 5 && i <= 9)
+	else if (i >= 6 && i <= 11)
 	{
 		gridblock[i].style.backgroundImage = "linear-gradient(#ff6f91,#ff9671,#ffc75f)";
 	}
-	else if (i >= 10 && i <= 14)
+	else if (i >= 12 && i <= 17)
 	{
 		gridblock[i].style.backgroundImage = "linear-gradient(#ffc75f,#f9f871)";
 	}
@@ -204,6 +205,7 @@ var random = function (number)
 	return Math.floor(Math.random() * number) + 1;
 };
 //assign random numbers to array
+var k=1;
 var assign = function ()
 {
 	randomnos[0] = random(20);
@@ -213,19 +215,35 @@ var assign = function ()
 		var randomnumber = random(20);
 		for (let j = 0; j < randomnos.length; j++)
 		{
-			if (randomnumber === randomnos[j])
-			{
-				flag = 1;
-			}
+			
+				if (randomnumber === randomnos[j])
+				{
+					flag = 1;
+				}
+			
 		}
+		if(randomnos.length===23)
+		flag=0;
 		if (flag === 0)
 		{
-			randomnos.push(randomnumber);
-			if (randomnos.length === 20)
+			
+			if((k+1)%6===0)
+				randomnos.push(0);
+			  else
+				randomnos.push(randomnumber);
+				if (randomnos.length === 24)
 				break;
+			k++;
+			console.log(k);
+			
 		}
-		else
-			flag = 0;
+		else{
+		
+		  flag = 0;
+
+		}
+
+			
 	}
 };
 // this function creates modes choices div and adds hover features and calls disp() to display best scores of the current mode
@@ -368,16 +386,39 @@ var modes = function ()
 //generated playing blocks with numbers on it
 var createDiv = function ()
 {
-	for (let i = 0; i < 20; i++)
-	{
-		const myDiv = document.createElement('div');
-		box.appendChild(myDiv);
-		myDiv.classList.add("blocks");
-		const divNumber = document.createElement('strong');
-		divNumber.classList.add("numbers");
-		myDiv.appendChild(divNumber);
-		divNumber.innerHTML = randomnos[i];
-	}
+
+		for(let i=0;i<4;i++ )
+		{
+			const gridRow = document.createElement('div');
+			box.appendChild(gridRow);
+			gridRow.classList.add("row");
+			for (let j = 0; j < 6; j++)
+			{
+				const myDiv = document.createElement('div');
+				gridRow.appendChild(myDiv);
+				myDiv.classList.add("blocks");
+				const divNumber = document.createElement('strong');
+				divNumber.classList.add("numbers");
+				myDiv.appendChild(divNumber);
+				pos[j+(i*6)]=20*j;
+				myDiv.style.left=`${pos[j+(i*6)]}%`;
+	
+			}
+		}
+		console.log(gridblock.length);
+	   for(let i=0;i<24;i++)
+	   {
+		   if((i+1)%6!==0)
+		   {
+			   number[i].innerHTML=randomnos[i];
+		   }
+		   else
+		   {
+			number[i].innerHTML="";
+		   }
+
+	   }
+
 };
 //best time record
 var bestrec = function ()
@@ -401,17 +442,18 @@ var game = function ()
 		gridblock[i].addEventListener('click', function (e)
 		{
 			e.stopPropagation();
-			if (randomnos[i] === j && j <= 20 + count)
+
+			if (parseInt(number[i].innerHTML)=== j && j <= 20 + count)
 			{
-				colorPicker(i);
 				audio.play();
 				number[i].style.color = "#000000";
+				gridblock[i].style.backgroundColor="red";
 				var changenum = 20 + j;
-				randomnos[i] = changenum;
 				number[i].innerHTML = changenum;
+				changes(i);
 				j++;
 			}
-			if (randomnos[i] === j && j > 20 + count)
+			if (parseInt(number[i].innerHTML)=== j && j > 20 + count)
 			{
 				number[i].innerHTML = "";
 				audio.play();
@@ -442,6 +484,125 @@ var game = function ()
 		});
 	}
 };
+var changes=function(i){
+
+        if((i>=0&&i<=5)||((i>=12&&i<=17)))
+        {
+				if(pos[i]===0)
+				{
+					var k=i%6;
+					if(k-1<0)
+					{
+						
+						number[i+5].style.color=number[i].style.color;
+						gridblock[i+5].style.backgroundColor=gridblock[i].style.backgroundColor;
+
+					}
+					 
+					else
+					{
+						
+						number[i-1].style.color=number[i].style.color;
+						gridblock[i-1].style.backgroundColor=gridblock[i].style.backgroundColor;
+					}
+					  
+				}
+			
+
+        }
+        else{
+		
+				if(pos[i]===100)
+				{
+					var k=i%6;
+					if(k===0)
+					{
+						number[i].innerHTML=number[i+5].innerHTML;
+						number[i].style.color=number[i+5].style.color;
+						gridblock[i].style.backgroundColor=gridblock[i+5].style.backgroundColor;
+					}
+				
+					else
+					{
+						number[i].innerHTML=number[i-1].innerHTML;
+						number[i].style.color=number[i-1].style.color;
+						gridblock[i].style.backgroundColor=gridblock[i-1].style.backgroundColor;
+					}
+					 
+				}
+			
+        }
+ 
+};
+var  move=function(){
+	for(let i=0;i<24;i++){
+        if((i>=0&&i<=5)||((i>=12&&i<=17)))
+        {
+			
+				if(pos[i]===0)
+				{
+					var k=i%6;
+					if(k-1<0)
+					{
+						number[i+5].innerHTML=number[i].innerHTML;
+						
+
+					}
+					 
+					else
+					{
+						number[i-1].innerHTML=number[i].innerHTML;
+					
+					}
+					  
+				}
+			
+            if(pos[i]===(-20))
+            {
+                pos[i]=100;
+                gridblock[i].style.transform="translateX(pos[i]%)";
+                pos[i]--;
+            }
+            else
+            {
+                pos[i]--;
+                gridblock[i].style.left=`${pos[i]}%`;
+               
+            }
+        }
+        else{
+		
+				if(pos[i]===100)
+				{
+					var k=i%6;
+					if(k===0)
+					{
+						number[i].innerHTML=number[i+5].innerHTML;
+			
+					}
+				
+					else
+					{
+						number[i].innerHTML=number[i-1].innerHTML;
+					
+					}
+					 
+				}
+			
+            if(pos[i]===100)
+            {
+                pos[i]=-20;
+                gridblock[i].style.transform="translateX(pos[i]%)";
+                pos[i]++;
+            }
+            else
+            {
+               pos[i]++;
+               gridblock[i].style.left=`${pos[i]}%`;
+            }
+        }
+	}  
+};
 
 /*
 
@@ -455,6 +616,7 @@ var run = function ()
 	timer();
 	assign();
 	createDiv();
+	setInterval(move,40);
 	game();
 };
 //playgain used for restart
@@ -498,6 +660,7 @@ var begin = function ()
 
 //game begin from this funtion call
 modes();
+
 //fires only if new game is clicked
 newgame.addEventListener('click', function ()
 {
