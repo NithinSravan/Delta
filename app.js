@@ -2,21 +2,23 @@ var start;
 var restart;
 var i;
 var j;
-var k = [0, 0, 0];
 var index;
 var count;
-var pos=[];
+var pos = [];
 var body;
 var myVar;
 var end = 0;
 var diff;
+var conveyor;
+var size;
+var gamecount = 0;
 var s = 0;
 var ms = 0;
 // best[3][5] for storing best scores in three modes
 var best = new Array(3);
 for (let i = 0; i < 3; i++)
 {
-	best[i] = new Array(5);
+	best[i] = new Array();
 }
 var sound = new Audio("Repulsor.mp3");
 var audio = new Audio("button.wav");
@@ -39,6 +41,7 @@ var setup = function ()
 {
 	i = 3;
 	j = 1;
+	gamecount = 0;
 	randomnos = [];
 	sec.innerHTML = "0";
 	msec.innerHTML = "000";
@@ -46,7 +49,7 @@ var setup = function ()
 	toptext.innerHTML = "Click Away!!";
 	box.style.backgroundColor = "transparent";
 	box.innerHTML = "";
-	box.style.border = "1px solid #fff";
+	box.style.border = "10px solid #fff";
 	const myH1 = document.createElement('h1');
 	box.appendChild(myH1);
 	myH1.setAttribute("id", "countdown");
@@ -57,9 +60,11 @@ var setup = function ()
 //displays best score by creating and appending a new h3 element. h3 is created and appended using bestrec()
 var display = function (index)
 {
+
+	best[index] = JSON.parse(localStorage.getItem(`arrbest${index}`));
 	best[index].sort();
-	let m = k[index];
-	for (let i = 0; i < m; i++)
+	size = best[index].length;
+	for (let i = 0; i < size; i++)
 	{
 		bs = Math.floor(best[index][i] / 1000);
 		bms = best[index][i] - (Math.floor(best[index][i] / 1000) * 1000);
@@ -78,7 +83,8 @@ var display = function (index)
 //separate display function to display scores of a particular mode when in that mode.
 var disp = function (index)
 {
-	for (let i = 0; i < k[index]; i++)
+	best[index] = JSON.parse(localStorage.getItem(`arrbest${index}`));
+	for (let i = 0; i < best[index].length; i++)
 	{
 		bestrec();
 	}
@@ -87,82 +93,28 @@ var disp = function (index)
 //used to change the color when clicked depending on the index
 var colorPicker = function (i)
 {
-	if (i >= 0 && i <= 5)
-	{
-		gridblock[i].style.backgroundImage = "linear-gradient(#845ec2,#d65db1,#ff6f91)";
-	}
-	else if (i >= 6 && i <= 11)
-	{
-		gridblock[i].style.backgroundImage = "linear-gradient(#ff6f91,#ff9671,#ffc75f)";
-	}
-	else if (i >= 12 && i <= 17)
-	{
-		gridblock[i].style.backgroundImage = "linear-gradient(#ffc75f,#f9f871)";
-	}
-	else
-	{
-		gridblock[i].style.backgroundImage = "linear-gradient(#f9f871,#fff)";
-	}
+
+	gridblock[i].style.backgroundColor = `rgb(${255-(j*5)},0,0)`;
+
 };
 //adds best scores to the array in local storage
 var bestScore = function (index)
 {
-	if (k[index] === 0)
+	best[index].push(diff);
+	localStorage.setItem(`arrbest${index}`, JSON.stringify(best[index]));
+	best[index] = JSON.parse(localStorage.getItem(`arrbest${index}`));
+	size = best[index].length;
+	best[index].sort();
+	localStorage.setItem(`arrbest${index}`, JSON.stringify(best[index]));
+	if (size > 5)
 	{
-		best[index][0] = diff;
-		bs = Math.floor(diff / 1000);
-		bms = diff - (Math.floor(diff / 1000) * 1000);
-		if (Math.floor(bms / 10) === 0)
-		{
-			btime[0].innerHTML = bs + '.00' + bms + ' s';
-		}
-		else if (Math.floor(bms / 100) === 0)
-		{
-			btime[0].innerHTML = bs + '.0' + bms + ' s';
-		}
-		else
-			btime[0].innerHTML = bs + '.' + bms + ' s';
-		k[index]++;
-		localStorage.setItem("best", JSON.stringify(best));
+		best[index].pop();
+		localStorage.setItem(`arrbest${index}`, JSON.stringify(best[index]));
+		disp(index);
 	}
 	else
-	{
-		if (best[index].includes(undefined))
-		{
-			best[index][k[index]] = diff;
-			bestrec();
-			localStorage.setItem("best", JSON.stringify(best));
-			k[index]++;
-			display(index);
-		}
-		else
-		{
-			best[index].sort();
-			for (let i = 0; i < k[index]; i++)
-			{
-				if (best[index][i] > diff)
-				{
-					bs = Math.floor(diff / 1000);
-					bms = diff - (Math.floor(diff / 1000) * 1000);
-					best[index][4] = diff;
-					if (Math.floor(bms / 10) === 0)
-					{
-						btime[i].innerHTML = bs + '.00' + bms + ' s';
-					}
-					else if (Math.floor(bms / 100) === 0)
-					{
-						btime[i].innerHTML = bs + '.0' + bms + ' s';
-					}
-					else
-						btime[i].innerHTML = bs + '.' + bms + ' s';
-					best[index].sort();
-					localStorage.setItem("best", JSON.stringify(best));
-					break;
+		disp(index);
 
-				}
-			}
-		}
-	}
 };
 //timer function
 var timer = function ()
@@ -205,9 +157,9 @@ var random = function (number)
 	return Math.floor(Math.random() * number) + 1;
 };
 //assign random numbers to array
-var k=1;
 var assign = function ()
 {
+	var l = 1;
 	randomnos[0] = random(20);
 	var flag = 0;
 	for (let i = 0;; i++)
@@ -215,35 +167,27 @@ var assign = function ()
 		var randomnumber = random(20);
 		for (let j = 0; j < randomnos.length; j++)
 		{
-			
-				if (randomnumber === randomnos[j])
-				{
-					flag = 1;
-				}
-			
+			if (randomnumber === randomnos[j])
+			{
+				flag = 1;
+			}
 		}
-		if(randomnos.length===23)
-		flag=0;
+		if (randomnos.length === 23)
+			flag = 0;
 		if (flag === 0)
 		{
-			
-			if((k+1)%6===0)
+			if ((l + 1) % 6 === 0)
 				randomnos.push(0);
-			  else
+			else
 				randomnos.push(randomnumber);
-				if (randomnos.length === 24)
+			if (randomnos.length === 24)
 				break;
-			k++;
-			console.log(k);
-			
+			l++;
 		}
-		else{
-		
-		  flag = 0;
-
+		else
+		{
+			flag = 0;
 		}
-
-			
 	}
 };
 // this function creates modes choices div and adds hover features and calls disp() to display best scores of the current mode
@@ -255,15 +199,15 @@ var modes = function ()
 	box.appendChild(myDiv);
 	myDiv.setAttribute('id', 'gamemodes');
 	var modeBox = document.getElementById('gamemodes');
-    //creates mode divs
+	//creates mode divs
 	for (let i = 0; i < 3; i++)
 	{
 		const Div = document.createElement('div');
 		modeBox.appendChild(Div);
 		Div.classList.add("mode");
 	}
-    modeSelect = document.getElementsByClassName('mode');
-    //creates h4 for text inside mode
+	modeSelect = document.getElementsByClassName('mode');
+	//creates h4 for text inside mode
 	for (let i = 0; i < 3; i++)
 	{
 		const modetxt = document.createElement('h4');
@@ -272,6 +216,7 @@ var modes = function ()
 	}
 	body = document.querySelector('body');
 	var modetext = document.getElementsByClassName('modetext');
+	//this loop handles all mouse events like hovering and clicking
 	for (let i = 0; i < 3; i++)
 	{
 		modeSelect[i].addEventListener('mouseover', function ()
@@ -329,7 +274,7 @@ var modes = function ()
 			{
 				body.style.backgroundColor = "#77e83f";
 				index = i;
-				if (k[i] === 0)
+				if (localStorage.getItem(`arrbest${i}`) === null)
 					btime[0].innerHTML = "0.000 s";
 				else
 					disp(i);
@@ -338,7 +283,7 @@ var modes = function ()
 			{
 				body.style.backgroundColor = "#ffa02b";
 				index = i;
-				if (k[i] === 0)
+				if (localStorage.getItem(`arrbest${i}`) === null)
 					btime[0].innerHTML = "0.000 s";
 				else
 					disp(i);
@@ -347,7 +292,7 @@ var modes = function ()
 			{
 				body.style.backgroundColor = "#ff2f2b";
 				index = i;
-				if (k[i] === 0)
+				if (localStorage.getItem(`arrbest${i}`) === null)
 					btime[0].innerHTML = "0.000 s";
 				else
 					disp(i);
@@ -387,38 +332,42 @@ var modes = function ()
 var createDiv = function ()
 {
 
-		for(let i=0;i<4;i++ )
+	for (let i = 0; i < 4; i++)
+	{
+		const gridRow = document.createElement('div');
+		box.appendChild(gridRow);
+		gridRow.classList.add("row");
+		for (let j = 0; j < 6; j++)
 		{
-			const gridRow = document.createElement('div');
-			box.appendChild(gridRow);
-			gridRow.classList.add("row");
-			for (let j = 0; j < 6; j++)
-			{
-				const myDiv = document.createElement('div');
-				gridRow.appendChild(myDiv);
-				myDiv.classList.add("blocks");
-				const divNumber = document.createElement('strong');
-				divNumber.classList.add("numbers");
-				myDiv.appendChild(divNumber);
-				pos[j+(i*6)]=20*j;
-				myDiv.style.left=`${pos[j+(i*6)]}%`;
-	
-			}
+			const myDiv = document.createElement('div');
+			gridRow.appendChild(myDiv);
+			myDiv.classList.add("blocks");
+			const placer = document.createElement('div');
+			myDiv.appendChild(placer);
+			placer.classList.add("pos");
+			const divNumber = document.createElement('strong');
+			divNumber.classList.add("numbers");
+			myDiv.appendChild(divNumber);
+			pos[j + (i * 6)] = 20 * j;
+			if (i % 2 === 0)
+				myDiv.style.left = `${pos[j+(i*6)]}%`;
+			else
+				myDiv.style.right = `${100-(pos[j+(i*6)])}%`;
+
 		}
-		console.log(gridblock.length);
-	   for(let i=0;i<24;i++)
-	   {
-		   if((i+1)%6!==0)
-		   {
-			   number[i].innerHTML=randomnos[i];
-		   }
-		   else
-		   {
-			number[i].innerHTML="";
-		   }
-
-	   }
-
+	}
+	console.log(gridblock.length);
+	for (let i = 0; i < 24; i++)
+	{
+		if ((i + 1) % 6 !== 0)
+		{
+			number[i].innerHTML = randomnos[i];
+		}
+		else
+		{
+			number[i].innerHTML = "";
+		}
+	}
 };
 //best time record
 var bestrec = function ()
@@ -439,31 +388,39 @@ var game = function ()
 {
 	for (let i = 0; i < gridblock.length; i++)
 	{
+
 		gridblock[i].addEventListener('click', function (e)
 		{
 			e.stopPropagation();
 
-			if (parseInt(number[i].innerHTML)=== j && j <= 20 + count)
+			if (parseInt(number[i].innerHTML) === j && j <= 20 + count)
 			{
-				audio.play();
-				number[i].style.color = "#000000";
-				gridblock[i].style.backgroundColor="red";
-				var changenum = 20 + j;
-				number[i].innerHTML = changenum;
-				changes(i);
-				j++;
+				if (pos[i] > -10 && pos[i] < 90)
+				{
+					gridblock[i].style.backgroundColor = "red";
+					audio.play();
+					colorPicker(i);
+					var changenum = 20 + j;
+					number[i].innerHTML = changenum;
+					j++;
+				}
+
 			}
-			if (parseInt(number[i].innerHTML)=== j && j > 20 + count)
+			if (parseInt(number[i].innerHTML) === j && j > 20 + count)
 			{
-				number[i].innerHTML = "";
-				audio.play();
-				gridblock[i].style.backgroundImage = "none";
-				gridblock[i].style.backgroundColor = "#000000";
-				j++;
+				if (pos[i] > -10 && pos[i] < 90)
+				{
+					number[i].innerHTML = "";
+					audio.play();
+					gridblock[i].style.backgroundImage = "none";
+					gridblock[i].style.backgroundColor = "#000000";
+					j++;
+				}
 			}
 			if (j > 40 + count)
 			{
 				end = 1;
+				clearInterval(conveyor);
 				//these while loops are used to remove classes
 				while (gridblock[0])
 				{
@@ -478,130 +435,91 @@ var game = function ()
 				box.appendChild(restart);
 				restart.setAttribute("id", "res");
 				restart.innerHTML = 'Your time is: ' + sec.innerHTML + '.' + msec.innerHTML + 's' + '<br>' + ' Restart';
+
+				console.log(index);
 				bestScore(index);
 				box.addEventListener("click", playagain);
 			}
 		});
 	}
+
+
 };
-var changes=function(i){
+//this functions updates the position of boxes with respect to the left and right edges of the container
+var move = function ()
+{
 
-        if((i>=0&&i<=5)||((i>=12&&i<=17)))
-        {
-				if(pos[i]===0)
-				{
-					var k=i%6;
-					if(k-1<0)
-					{
-						
-						number[i+5].style.color=number[i].style.color;
-						gridblock[i+5].style.backgroundColor=gridblock[i].style.backgroundColor;
+	for (let i = 0; i < 24; i++)
+	{
+		if ((i >= 0 && i <= 5) || ((i >= 12 && i <= 17)))
+		{
 
-					}
-					 
-					else
-					{
-						
-						number[i-1].style.color=number[i].style.color;
-						gridblock[i-1].style.backgroundColor=gridblock[i].style.backgroundColor;
-					}
-					  
-				}
-			
+			if (pos[i] >= -10 && pos[i] <= 0)
+			{
+				var k = i % 6;
+				if (k - 1 < 0)
+				{
+					number[i + 5].innerHTML = number[i].innerHTML;
+					gridblock[i + 5].style.backgroundColor = `${gridblock[i].style.backgroundColor}`;
 
-        }
-        else{
-		
-				if(pos[i]===100)
-				{
-					var k=i%6;
-					if(k===0)
-					{
-						number[i].innerHTML=number[i+5].innerHTML;
-						number[i].style.color=number[i+5].style.color;
-						gridblock[i].style.backgroundColor=gridblock[i+5].style.backgroundColor;
-					}
-				
-					else
-					{
-						number[i].innerHTML=number[i-1].innerHTML;
-						number[i].style.color=number[i-1].style.color;
-						gridblock[i].style.backgroundColor=gridblock[i-1].style.backgroundColor;
-					}
-					 
 				}
-			
-        }
- 
-};
-var  move=function(){
-	for(let i=0;i<24;i++){
-        if((i>=0&&i<=5)||((i>=12&&i<=17)))
-        {
-			
-				if(pos[i]===0)
-				{
-					var k=i%6;
-					if(k-1<0)
-					{
-						number[i+5].innerHTML=number[i].innerHTML;
-						
 
-					}
-					 
-					else
-					{
-						number[i-1].innerHTML=number[i].innerHTML;
-					
-					}
-					  
-				}
-			
-            if(pos[i]===(-20))
-            {
-                pos[i]=100;
-                gridblock[i].style.transform="translateX(pos[i]%)";
-                pos[i]--;
-            }
-            else
-            {
-                pos[i]--;
-                gridblock[i].style.left=`${pos[i]}%`;
-               
-            }
-        }
-        else{
-		
-				if(pos[i]===100)
+				else
 				{
-					var k=i%6;
-					if(k===0)
-					{
-						number[i].innerHTML=number[i+5].innerHTML;
-			
-					}
-				
-					else
-					{
-						number[i].innerHTML=number[i-1].innerHTML;
-					
-					}
-					 
+					number[i - 1].innerHTML = number[i].innerHTML;
+					gridblock[i - 1].style.backgroundColor = `${gridblock[i].style.backgroundColor}`;
 				}
-			
-            if(pos[i]===100)
-            {
-                pos[i]=-20;
-                gridblock[i].style.transform="translateX(pos[i]%)";
-                pos[i]++;
-            }
-            else
-            {
-               pos[i]++;
-               gridblock[i].style.left=`${pos[i]}%`;
-            }
-        }
-	}  
+
+			}
+
+			if (pos[i] === (-20))
+			{
+				pos[i] = 100;
+				gridblock[i].style.transform = "translateX(pos[i]%)";
+				pos[i]--;
+			}
+			else
+			{
+				pos[i]--;
+				gridblock[i].style.left = `${pos[i]}%`;
+
+			}
+		}
+		else
+		{
+
+			if (pos[i] >= -10 && pos[i] <= 0)
+			{
+				var k = i % 6;
+				if (k - 1 < 0)
+				{
+					number[i + 5].innerHTML = number[i].innerHTML;
+					gridblock[i + 5].style.backgroundColor = `${gridblock[i].style.backgroundColor}`;
+
+				}
+
+				else
+				{
+					number[i - 1].innerHTML = number[i].innerHTML;
+					gridblock[i - 1].style.backgroundColor = `${gridblock[i].style.backgroundColor}`;
+				}
+
+			}
+
+			if (pos[i] === (-20))
+			{
+				pos[i] = 100;
+				gridblock[i].style.transform = "translateX(pos[i]%)";
+				pos[i]--;
+			}
+			else
+			{
+				pos[i]--;
+				gridblock[i].style.right = `${pos[i]}%`;
+
+			}
+		}
+	}
 };
 
 /*
@@ -616,7 +534,7 @@ var run = function ()
 	timer();
 	assign();
 	createDiv();
-	setInterval(move,40);
+	conveyor = setInterval(move, 40);
 	game();
 };
 //playgain used for restart
@@ -666,13 +584,27 @@ newgame.addEventListener('click', function ()
 {
 	end = 1;
 	box.innerHTML = "";
-	for (let i = k[index] - 1; i > 0; i--)
+	clearInterval(conveyor);
+	if (!(btime[0].innerHTML === "0.000 s"))
 	{
-		btime[i].parentNode.removeChild(btime[i]);
-	};
+		for (let i = 0; i < 3; i++)
+		{
+			if (localStorage.getItem(`arrbest${i}`) !== null)
+			{
+				best[i] = JSON.parse(localStorage.getItem(`arrbest${i}`));
+
+				for (let j = best[i].length - 1; j > 0; j--)
+				{
+					btime[j].parentNode.removeChild(btime[j]);
+				};
+
+
+			}
+		}
+	}
 	clearInterval(myVar);
-    box.removeEventListener('click', playagain);
-    box.removeEventListener('click', begin);
+	box.removeEventListener('click', playagain);
+	box.removeEventListener('click', begin);
 	btime[0].innerHTML = "0.000 s";
 	body.style.backgroundColor = "rgb(52, 54, 51)";
 	box.style.backgroundColor = "transparent";
